@@ -9,8 +9,25 @@ import {
 } from "recharts";
 
 const ConsoMontantBarChart = ({ data }) => {
+  // Helper to format a period label from dateDebut and dateFin
+  const formatPeriode = (entry) => {
+    if (!entry?.dateDebut || !entry?.dateFin) return "";
+    const d1 = new Date(entry.dateDebut);
+    const d2 = new Date(entry.dateFin);
+    const f1 = d1.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+    const f2 = d2.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "2-digit",
+    });
+    return `${f1} - ${f2}`;
+  };
   return (
-    <div className="w-1/2 mx-auto h-80 bg-white rounded-xl shadow p-4">
+    <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4">
       <h3 className="text-lg font-bold mb-4 text-gray-700">
         Consommation & Montant de la facture
       </h3>
@@ -22,15 +39,8 @@ const ConsoMontantBarChart = ({ data }) => {
           <XAxis
             dataKey="date"
             tick={{ fontSize: 12 }}
-            tickFormatter={(date) => {
-              if (!date) return "";
-              const d = new Date(date);
-              return d.toLocaleDateString("fr-FR", {
-                day: "2-digit",
-                month: "2-digit",
-                year: "numeric",
-              });
-            }}
+            tickFormatter={(_, idx) => formatPeriode(data[idx])}
+            interval={0}
           />
           <YAxis
             yAxisId="left"
@@ -58,6 +68,7 @@ const ConsoMontantBarChart = ({ data }) => {
             formatter={(value, name) =>
               name === "consommation" ? `${value} kWh` : `${value} fcfa`
             }
+            labelFormatter={(_, idx) => formatPeriode(data[idx])}
           />
           <Legend />
           <Bar

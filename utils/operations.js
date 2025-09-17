@@ -13,6 +13,7 @@ export function calculPeriodeEtConso(dateDebut, dateFin, indexDebut, indexFin) {
   const diffTime = d2 - d1;
   const nbJours = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
   const consommation = Number(indexFin) - Number(indexDebut);
+  // console.log(consommation);
   const consoMoyenne = nbJours > 0 ? consommation / nbJours : 0;
   return { nbJours, consommation, consoMoyenne };
 }

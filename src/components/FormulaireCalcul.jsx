@@ -3,7 +3,6 @@ import {
   calculPeriodeEtConso,
   montantConsommation,
 } from "../../utils/operations";
-import Historique from "./historique";
 
 export default function FormulaireCalcul() {
   const [selectedTab, setSelectedTab] = React.useState("tab1");
@@ -67,7 +66,7 @@ export default function FormulaireCalcul() {
     // Générer les résultats alternatifs pour les périodes de 50 à 65 jours
     const alt = [];
     for (let jours = 50; jours <= 65; jours++) {
-      if (jours === nbJours) continue;
+      // if (jours === nbJours) continue;
       alt.push({
         jours,
         ...montantConsommation(consommation, jours),
@@ -78,8 +77,8 @@ export default function FormulaireCalcul() {
   };
 
   return (
-    <div className=" mx-auto flex justify-between items-start bg-transparent w-[85%] h-auto pt-6   ">
-      <div className="w-[45%]  bg-white shadow-lg rounded-lg ">
+    <div className="mx-auto flex flex-col md:flex-row justify-between items-start bg-transparent w-full max-w-5xl h-auto pt-4 gap-6">
+      <div className="w-full md:w-[48%] bg-white shadow-lg rounded-lg mb-6 md:mb-0">
         <div className="text-2xl py-4 px-4 bg-[var(--prev-yellow)] text-white text-center font-bold uppercas rounded-md">
           Formulaire de calcul
         </div>
@@ -167,10 +166,10 @@ export default function FormulaireCalcul() {
         </form>
       </div>
       {/* tab infos */}
-      <div className="w-[35%] max-w-xl ">
+      <div className="w-full md:w-[40%] max-w-xl">
         {/* Tab Buttons */}
         <div className="bg-[var(--prev-blue)] p-2 rounded-t-lg">
-          <div className="flex justify-center space-x-4">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
             {[
               { key: "tab1", label: "Historique" },
               { key: "infos", label: "Informations" },
@@ -192,7 +191,7 @@ export default function FormulaireCalcul() {
         </div>
         {/* Tab Content */}
         <div
-          className={`p-4 tab-content bg-white shadow-md rounded-lg ${
+          className={`p-3 sm:p-4 tab-content bg-white shadow-md rounded-lg ${
             selectedTab !== "tab1" ? "hidden" : ""
           }`}
         >
@@ -202,77 +201,91 @@ export default function FormulaireCalcul() {
                 Historique
               </h3>
               {result ? (
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <p className="mt-1 max-w-2xl text-md text-gray-500">
                   Du {result.dateDebut} au {result.dateFin}
                 </p>
               ) : (
-                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                <p className="mt-1 max-w-2xl text-md text-gray-500">
                   Veuillez remplir le formulaire pour voir l'historique
                 </p>
               )}
             </div>
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
+            <div className="border-t border-gray-200 px-2 sm:px-4 py-5 sm:p-0">
               {result && (
                 <>
-                  <dl className="sm:divide-y sm:divide-gray-200">
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
+                  <dl className="divide-y divide-gray-100">
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-blue-800 tracking-wide">
                         Nombre de jours
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                      <dd className="mt-1 text-xl font-bold text-yellow-700 sm:mt-0 sm:col-span-2 text-center">
                         {result.nbJours}
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-blue-800 tracking-wide">
                         Consommation totale
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.consommation} kWh
+                      <dd className="mt-1 text-xl font-bold text-blue-700 sm:mt-0 sm:col-span-2 text-center">
+                        {result.consommation}{" "}
+                        <span className="text-base font-semibold">kWh</span>
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-blue-800 tracking-wide">
                         Moyenne journalière
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.consoMoyenne.toFixed(2)} kWh/jour
+                      <dd className="mt-1 text-xl font-bold text-blue-500 sm:mt-0 sm:col-span-2 text-center">
+                        {result.consoMoyenne.toFixed(2)}{" "}
+                        <span className="text-base font-semibold">
+                          kWh/jour
+                        </span>
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-blue-800 tracking-wide">
                         Montant consommation
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.montantConso.toFixed(2)} fcfa
+                      <dd className="mt-1 text-xl font-bold text-yellow-800 sm:mt-0 sm:col-span-2 text-center">
+                        {result.montantConso.toFixed(2)}{" "}
+                        <span className="text-base font-semibold">fcfa</span>
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">TCO</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.TCO.toFixed(2)} fcfa
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-gray-700">
+                        TCO
+                      </dt>
+                      <dd className="mt-1 text-xl font-bold text-gray-800 sm:mt-0 sm:col-span-2 text-center">
+                        {result.TCO.toFixed(2)}{" "}
+                        <span className="text-base font-semibold">fcfa</span>
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-gray-700">
                         Redevance
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.redevance.toFixed(2)} fcfa
+                      <dd className="mt-1 text-xl font-bold text-gray-800 sm:mt-0 sm:col-span-2 text-center">
+                        {result.redevance.toFixed(2)}{" "}
+                        <span className="text-base font-semibold">fcfa</span>
                       </dd>
                     </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">TVA</dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                        {result.TVA.toFixed(2)} fcfa
-                      </dd>
-                    </div>
-                    <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Montant total
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                      <dt className="text-[1.05rem] sm:text-lg font-medium text-gray-700">
+                        TVA
                       </dt>
-                      <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 font-bold">
-                        {result.montantFacture.toFixed(2)} fcfa
+                      <dd className="mt-1 text-xl font-bold text-gray-800 sm:mt-0 sm:col-span-2 text-center">
+                        {result.TVA.toFixed(2)}{" "}
+                        <span className="text-base font-semibold">fcfa</span>
+                      </dd>
+                    </div>
+                    {/* Montant Facture mis en avant */}
+                    <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-4 sm:py-6 items-center bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 rounded-xl mt-4 shadow-lg border-2 border-yellow-300">
+                      <dt className="text-xl sm:text-2xl font-extrabold text-yellow-900 uppercase tracking-widest text-center sm:col-span-3 mb-2">
+                        Montant Facture
+                      </dt>
+                      <dd className="mt-1 text-4xl sm:text-5xl font-black text-yellow-900 sm:mt-0 sm:col-span-3 text-center drop-shadow-2xl ">
+                        {result.montantFacture.toFixed(2)}{" "}
+                        <span className="text-2xl font-bold">fcfa</span>
                       </dd>
                     </div>
                   </dl>
@@ -286,7 +299,7 @@ export default function FormulaireCalcul() {
                         {altResults.map((alt) => (
                           <button
                             key={alt.jours}
-                            className={`px-3 py-1 rounded text-sm font-bold border transition
+                            className={`px-3 py-1 rounded text-md font-bold border transition
                               ${
                                 result.nbJours === alt.jours
                                   ? "bg-[var(--prev-blue)] text-white border-[var(--prev-blue)]"
@@ -318,7 +331,7 @@ export default function FormulaireCalcul() {
           </div>
         </div>
         <div
-          className={`p-4 tab-content bg-white shadow-md rounded-lg ${
+          className={`p-3 sm:p-4 tab-content bg-white shadow-md rounded-lg ${
             selectedTab !== "infos" ? "hidden" : ""
           }`}
         >
@@ -327,32 +340,32 @@ export default function FormulaireCalcul() {
               <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Informations
               </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              <p className="mt-1 max-w-2xl text-md text-gray-500">
                 Dernier visite le date
               </p>
             </div>
             <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
               <dl className="sm:divide-y sm:divide-gray-200">
                 <div className="py-2 sm:py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
+                  <dt className="text-md font-medium text-gray-500">
                     Puissance souscrite
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dd className="mt-1 text-md text-gray-900 sm:mt-0 sm:col-span-2">
                     DDP (utilisation domestique petite puissance) moins de 6kw
                   </dd>
                 </div>
                 <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">Tva</dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dt className="text-md font-medium text-gray-500">Tva</dt>
+                  <dd className="mt-1 text-md text-gray-900 sm:mt-0 sm:col-span-2">
                     18%
                   </dd>
                 </div>
 
                 <div className="py-3 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt className="text-sm font-medium text-gray-500">
+                  <dt className="text-md font-medium text-gray-500">
                     redevance
                   </dt>
-                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  <dd className="mt-1 text-md text-gray-900 sm:mt-0 sm:col-span-2">
                     (nbj * 901) /63
                   </dd>
                 </div>

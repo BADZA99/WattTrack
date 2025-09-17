@@ -18,7 +18,7 @@ WattTrack est une application web moderne qui vous permet de suivre, simuler et 
 
 ## 🖥️ Aperçu
 
-![Aperçu WattTrack](public/vite.svg)
+![Aperçu WattTrack](screenshots/acceuil.png)
 
 ---
 
@@ -95,9 +95,32 @@ prevision_elec/
 
 ---
 
+
 ## 📸 Captures d’écran
 
-> Ajoutez ici des captures d’écran de l’interface pour illustrer l’expérience utilisateur.
+### Accueil (desktop)
+![Accueil WattTrack](screenshots/acceuil.png)
+
+### Accueil (mobile)
+![Accueil mobile](screenshots/acceuil%20mobile.png)
+
+### Simulation & Résultats (desktop)
+![Calcul et résultats](screenshots/calcul%20et%20resultats.png)
+
+### Simulation (mobile)
+![Calcul mobile](screenshots/calcul%20mobile.png)
+
+### Historique (desktop)
+![Historique](screenshots/historique.png)
+
+### Historique (mobile)
+![Historique mobile](screenshots/historique%20mobile.png)
+
+### À propos (desktop)
+![À propos](screenshots/about.png)
+
+### À propos (mobile)
+![À propos mobile](screenshots/about%20mobile.png)
 
 ---
 
