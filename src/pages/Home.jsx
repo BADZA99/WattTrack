@@ -5,7 +5,7 @@ const Home = () => (
   <div className="w-full min-h-[100vh] bg-[var(--prev-bg)] flex flex-col-reverse md:flex-row items-center justify-center overflow-hidden md:justify-start sm:space-y-2">
     {/* Left: Text & Button */}
     <div className="w-full md:w-[48%] h-80 md:h-[32rem] flex flex-col items-center md:items-start justify-center space-y-6 px-4 sm:px-8 md:px-10 py-8 md:py-0 animate-fadein-left ">
-      <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-white font-bold animate-slidein-down text-center md:text-left drop-shadow-lg">
+      <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-8xl text-white font-bold animate-slidein-down text-center md:text-left drop-shadow-lg">
         Bienvenue sur WattTrack
       </h1>
       <p className="text-lg sm:text-2xl text-yellow-100 font-medium text-center md:text-left animate-fadein-left">
