@@ -1,7 +1,9 @@
 import React from "react";
-import { calculPeriodeEtConso, montantConsommation } from "../utils/operations";
-import Historique from "./components/historique";
-
+import {
+  calculPeriodeEtConso,
+  montantConsommation,
+} from "../../utils/operations";
+import Historique from "./historique";
 
 export default function FormulaireCalcul() {
   const [selectedTab, setSelectedTab] = React.useState("tab1");
@@ -30,7 +32,6 @@ export default function FormulaireCalcul() {
     );
     const montant = montantConsommation(consommation, nbJours);
     const now = new Date().toISOString();
-
 
     // Création de l'objet à enregistrer
     const entry = {
@@ -160,7 +161,7 @@ export default function FormulaireCalcul() {
               className="bg-gray-900 text-white py-3 px-4 rounded-md hover:bg-gray-800 focus:outline-none focus:shadow-outline"
               type="submit"
             >
-              Calculer consommation 
+              Calculer consommation
             </button>
           </div>
         </form>

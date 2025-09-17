@@ -1,6 +1,5 @@
 import Historique from "../components/historique";
-import FormulaireCalcul from "../FormulaireCalcul";
-
+import FormulaireCalcul from "../components/FormulaireCalcul";
 
 const Calcul = () => (
   <div className="w-full h-auto bg-[var(--prev-bg)] text-white">
@@ -8,7 +7,6 @@ const Calcul = () => (
 
     <div className=" ">
       <Historique />
-     
     </div>
   </div>
 );
