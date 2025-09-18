@@ -1,6 +1,9 @@
 import React, { useRef } from "react";
 import HistoriqueTable from "../components/historique";
-import { calculPeriodeEtConso } from "../../utils/operations";
+import {
+  calculPeriodeEtConso,
+  montantConsommation,
+} from "../../utils/operations";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -73,8 +76,33 @@ export default function Historique() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    // Contrôle immédiat sur les valeurs négatives
+    if (
+      [
+        "indexDebut",
+        "indexFin",
+        "nbJours",
+        "consommation",
+        "consoMoyenne",
+        "montantFacture",
+      ].includes(name) &&
+      value !== "" &&
+      Number(value) < 0
+    ) {
+      toast.error("Aucune valeur négative n'est autorisée.");
+      return;
+    }
+    // Contrôle immédiat sur les dates
+    if (
+      (name === "dateFin" || name === "dateDebut") &&
+      ((name === "dateFin" && form.dateDebut && value < form.dateDebut) ||
+        (name === "dateDebut" && form.dateFin && form.dateFin < value))
+    ) {
+      toast.error("La date de fin doit être postérieure à la date de début.");
+      return;
+    }
     const updated = { ...form, [name]: value };
-    // Calcul automatique nbJours et consoMoyenne si dates et index sont valides
+    // Calcul automatique nbJours, consoMoyenne et montantFacture si tous les champs nécessaires sont valides
     if (
       (name === "dateDebut" ||
         name === "dateFin" ||
@@ -94,8 +122,22 @@ export default function Historique() {
       updated.nbJours = nbJours;
       updated.consommation = consommation;
       updated.consoMoyenne = consoMoyenne.toFixed(2);
+      // Calcul automatique du montantFacture si possible
+      if (
+        !isNaN(consommation) &&
+        !isNaN(nbJours) &&
+        nbJours > 0 &&
+        consommation >= 0
+      ) {
+        const montant = montantConsommation(
+          Number(consommation),
+          Number(nbJours)
+        ).montantFacture;
+        updated.montantFacture = Math.round(montant);
+      } else {
+        updated.montantFacture = "";
+      }
     }
-
     setForm(updated);
   };
 
@@ -116,8 +158,15 @@ export default function Historique() {
       toast.error("La date de fin doit être postérieure à la date de début.");
       return;
     }
-    if (Number(form.indexDebut) < 0 || Number(form.indexFin) < 0) {
-      toast.error("Les index doivent être des nombres positifs.");
+    if (
+      Number(form.indexDebut) < 0 ||
+      Number(form.indexFin) < 0 ||
+      Number(form.nbJours) < 0 ||
+      Number(form.consommation) < 0 ||
+      Number(form.consoMoyenne) < 0 ||
+      Number(form.montantFacture) < 0
+    ) {
+      toast.error("Aucune valeur négative n'est autorisée.");
       return;
     }
     if (Number(form.indexDebut) > Number(form.indexFin)) {
@@ -126,36 +175,43 @@ export default function Historique() {
       );
       return;
     }
-    const now = new Date().toISOString();
-    const entry = {
-      ...form,
-      date: now,
-      indexDebut: Number(form.indexDebut),
-      indexFin: Number(form.indexFin),
-      nbJours: Number(form.nbJours),
-      consommation: Number(form.consommation),
-      consoMoyenne: Number(form.consoMoyenne),
-      montantFacture: Number(form.montantFacture),
-    };
-    let data = localStorage.getItem("consultationData");
-    let parsed = data
-      ? JSON.parse(data)
-      : { derniereConsultation: null, historique: [] };
-    parsed.derniereConsultation = now;
-    parsed.historique.unshift(entry);
-    localStorage.setItem("consultationData", JSON.stringify(parsed));
-    setHistorique([entry, ...historique]);
-    setForm({
-      date: "",
-      dateDebut: "",
-      dateFin: "",
-      indexDebut: "",
-      indexFin: "",
-      nbJours: "",
-      consommation: "",
-      consoMoyenne: "",
-      montantFacture: "",
-    });
+    try {
+      const now = new Date().toISOString();
+      const entry = {
+        ...form,
+        date: now,
+        indexDebut: Number(form.indexDebut),
+        indexFin: Number(form.indexFin),
+        nbJours: Number(form.nbJours),
+        consommation: Number(form.consommation),
+        consoMoyenne: Number(form.consoMoyenne),
+        montantFacture: Number(form.montantFacture),
+      };
+      let data = localStorage.getItem("consultationData");
+      let parsed = data
+        ? JSON.parse(data)
+        : { derniereConsultation: null, historique: [] };
+      parsed.derniereConsultation = now;
+      parsed.historique.unshift(entry);
+      localStorage.setItem("consultationData", JSON.stringify(parsed));
+      setHistorique([entry, ...historique]);
+      setForm({
+        date: "",
+        dateDebut: "",
+        dateFin: "",
+        indexDebut: "",
+        indexFin: "",
+        nbJours: "",
+        consommation: "",
+        consoMoyenne: "",
+        montantFacture: "",
+      });
+      toast.success("Facture enregistrée avec succès !");
+    } catch (err) {
+      toast.error(
+        `Erreur lors de l'enregistrement de la facture. ${err.message}`
+      );
+    }
   };
 
   return (
@@ -292,8 +348,8 @@ export default function Historique() {
                 type="number"
                 name="montantFacture"
                 value={form.montantFacture}
-                onChange={handleChange}
-                className="w-full border rounded px-3 py-2 text-gray-700"
+                readOnly
+                className="w-full border rounded px-3 py-2 text-gray-700 bg-gray-100"
                 required
               />
             </div>

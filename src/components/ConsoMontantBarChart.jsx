@@ -46,16 +46,53 @@ const ConsoMontantBarChart = ({ data }) => {
     return `${f1} - ${f2}`;
   };
 
+  // Sélecteur de période
+  const [periode, setPeriode] = React.useState("2mois"); // "2mois", "annee", "tout"
+
+  // Filtrage selon la période sélectionnée
+  const filteredData = React.useMemo(() => {
+    if (!Array.isArray(data)) return [];
+    const now = new Date();
+    if (periode === "2mois") {
+      // 60 derniers jours
+      const cutoff = new Date(now);
+      cutoff.setDate(now.getDate() - 59); // inclut aujourd'hui
+      return data.filter((d) => {
+        const d2 = d.dateFin
+          ? new Date(d.dateFin)
+          : d.date
+          ? new Date(d.date)
+          : null;
+        return d2 && d2 >= cutoff;
+      });
+    }
+    if (periode === "annee") {
+      // 12 derniers mois
+      const cutoff = new Date(now);
+      cutoff.setFullYear(now.getFullYear() - 1);
+      return data.filter((d) => {
+        const d2 = d.dateFin
+          ? new Date(d.dateFin)
+          : d.date
+          ? new Date(d.date)
+          : null;
+        return d2 && d2 >= cutoff;
+      });
+    }
+    // tout l'historique
+    return data;
+  }, [data, periode]);
+
   // Preprocess data to round montantFacture
   const roundedData = React.useMemo(
     () =>
-      Array.isArray(data)
-        ? data.map((d) => ({
+      Array.isArray(filteredData)
+        ? filteredData.map((d) => ({
             ...d,
             montantFacture: Math.round(d.montantFacture),
           }))
         : [],
-    [data]
+    [filteredData]
   );
 
   const [activeChart, setActiveChart] = React.useState("consommation");
@@ -77,6 +114,29 @@ const ConsoMontantBarChart = ({ data }) => {
 
   return (
     <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4 flex flex-col">
+      {/* Sélecteur de période */}
+      <div className="flex items-center gap-2 mb-2">
+        {[
+          { key: "2mois", label: "2 derniers mois" },
+          { key: "annee", label: "Année dernière" },
+          { key: "tout", label: "Tout" },
+        ].map((p) => (
+          <button
+            key={p.key}
+            className={
+              "px-3 py-1 rounded border text-xs font-semibold transition " +
+              (periode === p.key
+                ? "bg-blue-100 border-blue-400 text-blue-900"
+                : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+            }
+            onClick={() => setPeriode(p.key)}
+            type="button"
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex flex-col sm:flex-row items-stretch border-b mb-2">
         <div className="flex-1 flex flex-col justify-center gap-1 pb-2 sm:pb-0">
           <span className="text-lg font-bold text-gray-700">
@@ -108,6 +168,7 @@ const ConsoMontantBarChart = ({ data }) => {
           ))}
         </div>
       </div>
+
       <div className="flex-1 w-full">
         <ChartContainer
           config={chartConfig}
