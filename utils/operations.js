@@ -59,3 +59,5 @@ export function montantConsommation(consoProj, joursFacturation) {
     // t3,
   };
 }
+
+

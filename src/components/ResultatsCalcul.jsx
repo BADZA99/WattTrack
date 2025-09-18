@@ -1,4 +1,4 @@
-import React from "react";
+
 
 export default function ResultatsCalcul({
   selectedTab,
@@ -91,7 +91,7 @@ export default function ResultatsCalcul({
                       <span className="text-base font-semibold">fcfa</span>
                     </dd>
                   </div>
-                  <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
+                  {/* <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-2 sm:py-3 items-center">
                     <dt className="text-[1.05rem] sm:text-lg font-medium text-gray-700">
                       TCO
                     </dt>
@@ -117,7 +117,7 @@ export default function ResultatsCalcul({
                       {result.TVA.toFixed(2)}{" "}
                       <span className="text-base font-semibold">fcfa</span>
                     </dd>
-                  </div>
+                  </div> */}
                   {/* Montant Facture mis en avant */}
                   <div className="flex flex-col sm:grid sm:grid-cols-3 sm:gap-4 sm:px-4 py-4 sm:py-6 items-center bg-gradient-to-r from-yellow-200 via-yellow-100 to-yellow-50 rounded-xl mt-4 shadow-lg border-2 border-yellow-300">
                     <dt className="text-xl sm:text-2xl font-extrabold text-yellow-900 uppercase tracking-widest text-center sm:col-span-3 mb-2">

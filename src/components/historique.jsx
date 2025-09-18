@@ -1,4 +1,3 @@
-import React from "react";
 import ConsoMontantBarChart from "./ConsoMontantBarChart";
 // 40968;
 // 41397

@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Calcul from "./pages/Calcul";
 import { ToastContainer } from "react-toastify";
+import Historique from "./pages/Historique";
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/calcul" element={<Calcul />} />
+          <Route path="/historique" element={<Historique />} />
+          <Route path="*" element={<div>Page Not Found</div>} />
         </Routes>
       </div>
       <ToastContainer position="bottom-right" autoClose={2000} />

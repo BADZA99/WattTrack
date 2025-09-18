@@ -8,7 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import FormulaireSaisie from "./FormulaireSaisie";
 import ResultatsCalcul from "./ResultatsCalcul";
 
-export default function FormulaireCalcul({ onNewConsultation }) {
+export default function FormulaireCalcul() {
   const [selectedTab, setSelectedTab] = React.useState("tab1");
   const [form, setForm] = React.useState({
     dateDebut: "",
@@ -84,7 +84,7 @@ export default function FormulaireCalcul({ onNewConsultation }) {
     // Si la prop onNewConsultation est fournie, on l'appelle pour prévenir le parent
     // qu'une nouvelle consultation vient d'être enregistrée. Cela permet au parent
     // de recharger l'historique et d'afficher instantanément la mise à jour.
-    if (onNewConsultation) onNewConsultation();
+    // if (onNewConsultation) onNewConsultation();
 
     setResult({
       nbJours,
@@ -97,11 +97,12 @@ export default function FormulaireCalcul({ onNewConsultation }) {
 
     // Générer les résultats alternatifs pour les périodes de 50 à 65 jours
     const alt = [];
-    for (let jours = 50; jours <= 65; jours++) {
-      // if (jours === nbJours) continue;
+    for (let jours = 57; jours <= 63; jours++) {
+      // On projette la consommation sur la période : consommation moyenne * jours projetés
+      const consoProj = consoMoyenne * jours;
       alt.push({
         jours,
-        ...montantConsommation(consommation, jours),
+        ...montantConsommation(consoProj, jours),
       });
     }
     setAltResults(alt);
