@@ -17,7 +17,7 @@ const Home = () => (
       >
         <span className="block w-full text-center">Lancer ma simulation</span>
         <svg
-          className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--prev-yellow)] group-hover:text-white transition flex-shrink-0"
+          className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--prev-bg)] group-hover:text-white  transition flex-shrink-0"
           fill="none"
           stroke="currentColor"
           strokeWidth="2"

@@ -26,6 +26,12 @@ const ConsoMontantBarChart = ({ data }) => {
     });
     return `${f1} - ${f2}`;
   };
+
+  // Preprocess data to round montantFacture
+  const roundedData = Array.isArray(data)
+    ? data.map((d) => ({ ...d, montantFacture: Math.round(d.montantFacture) }))
+    : [];
+
   return (
     <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4">
       <h3 className="text-lg font-bold mb-4 text-gray-700">
@@ -33,13 +39,13 @@ const ConsoMontantBarChart = ({ data }) => {
       </h3>
       <ResponsiveContainer width="100%" height="85%">
         <BarChart
-          data={data}
+          data={roundedData}
           margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
         >
           <XAxis
             dataKey="date"
             tick={{ fontSize: 12 }}
-            tickFormatter={(_, idx) => formatPeriode(data[idx])}
+            tickFormatter={(_, idx) => formatPeriode(roundedData[idx])}
             interval={0}
           />
           <YAxis
@@ -65,10 +71,13 @@ const ConsoMontantBarChart = ({ data }) => {
             }}
           />
           <Tooltip
-            formatter={(value, name) =>
-              name === "consommation" ? `${value} kWh` : `${value} fcfa`
-            }
-            labelFormatter={(_, idx) => formatPeriode(data[idx])}
+            formatter={(value, name) => {
+              if (name === "consommation") return `${value} kWh`;
+              if (name === "Montant (fcfa)" || name === "montantFacture")
+                return `${value} fcfa`;
+              return value;
+            }}
+            labelFormatter={(_, idx) => formatPeriode(roundedData[idx])}
           />
           <Legend />
           <Bar
@@ -89,6 +98,7 @@ const ConsoMontantBarChart = ({ data }) => {
       </ResponsiveContainer>
     </div>
   );
+  // (removed duplicate export and extra closing brace)
 };
 
 export default ConsoMontantBarChart;
