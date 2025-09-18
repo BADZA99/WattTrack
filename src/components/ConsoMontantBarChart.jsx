@@ -66,6 +66,19 @@ const ConsoMontantBarChart = ({ data }) => {
         return d2 && d2 >= cutoff;
       });
     }
+    if (periode === "6mois") {
+      // 6 derniers mois
+      const cutoff = new Date(now);
+      cutoff.setMonth(now.getMonth() - 5); // inclut ce mois-ci
+      return data.filter((d) => {
+        const d2 = d.dateFin
+          ? new Date(d.dateFin)
+          : d.date
+          ? new Date(d.date)
+          : null;
+        return d2 && d2 >= cutoff;
+      });
+    }
     if (periode === "annee") {
       // 12 derniers mois
       const cutoff = new Date(now);
@@ -118,6 +131,8 @@ const ConsoMontantBarChart = ({ data }) => {
       <div className="flex items-center gap-2 mb-2">
         {[
           { key: "2mois", label: "2 derniers mois" },
+          { key: "3mois", label: "3 derniers mois" },
+          { key: "6mois", label: "6 derniers mois" },
           { key: "annee", label: "Année dernière" },
           { key: "tout", label: "Tout" },
         ].map((p) => (
