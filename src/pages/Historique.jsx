@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import HistoriqueTable from "../components/historique";
 import { calculPeriodeEtConso } from "../../utils/operations";
 import { toast } from "react-toastify";
@@ -17,6 +17,48 @@ export default function Historique() {
     montantFacture: "",
   });
   const [historique, setHistorique] = React.useState([]);
+  const fileInputRef = useRef(null);
+  // Exporte l'historique au format JSON
+  const handleExport = () => {
+    const data = localStorage.getItem("consultationData");
+    if (!data) {
+      toast.error("Aucune donnée à exporter.");
+      return;
+    }
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "historique_electricite.json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // Importe un fichier JSON et restaure l'historique
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        if (!imported.historique || !Array.isArray(imported.historique)) {
+          toast.error("Fichier invalide ou corrompu.");
+          return;
+        }
+        localStorage.setItem("consultationData", JSON.stringify(imported));
+        setHistorique(imported.historique);
+        toast.success("Historique importé avec succès !");
+      } catch {
+        toast.error("Erreur lors de l'importation du fichier.");
+      }
+    };
+    reader.readAsText(file);
+    // Réinitialise la valeur pour permettre de réimporter le même fichier si besoin
+    e.target.value = "";
+  };
 
   React.useEffect(() => {
     const data = localStorage.getItem("consultationData");
@@ -118,6 +160,27 @@ export default function Historique() {
 
   return (
     <div className="w-full min-h-[100vh] bg-[var(--prev-bg)] text-white flex flex-col items-center pt-8">
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={handleExport}
+          className="bg-green-600 text-white px-4 py-2 rounded font-bold hover:bg-green-800"
+        >
+          Exporter l'historique
+        </button>
+        <button
+          onClick={() => fileInputRef.current && fileInputRef.current.click()}
+          className="bg-yellow-600 text-white px-4 py-2 rounded font-bold hover:bg-yellow-800"
+        >
+          Importer l'historique
+        </button>
+        <input
+          type="file"
+          accept="application/json"
+          ref={fileInputRef}
+          style={{ display: "none" }}
+          onChange={handleImport}
+        />
+      </div>
       <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-6 mb-8">
         <h2 className="text-2xl font-bold text-center text-[var(--prev-blue)] mb-4">
           Ajouter une facture

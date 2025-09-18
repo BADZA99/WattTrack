@@ -1,12 +1,31 @@
+"use client";
+
+import * as React from "react";
 import {
   BarChart,
   Bar,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+
+const chartConfig = {
+  consommation: {
+    label: "Consommation (kWh)",
+    color: "#60a5fa",
+  },
+  montantFacture: {
+    label: "Montant (fcfa)",
+    color: "#facc15",
+  },
+};
 
 const ConsoMontantBarChart = ({ data }) => {
   // Helper to format a period label from dateDebut and dateFin
@@ -28,77 +47,118 @@ const ConsoMontantBarChart = ({ data }) => {
   };
 
   // Preprocess data to round montantFacture
-  const roundedData = Array.isArray(data)
-    ? data.map((d) => ({ ...d, montantFacture: Math.round(d.montantFacture) }))
-    : [];
+  const roundedData = React.useMemo(
+    () =>
+      Array.isArray(data)
+        ? data.map((d) => ({
+            ...d,
+            montantFacture: Math.round(d.montantFacture),
+          }))
+        : [],
+    [data]
+  );
+
+  const [activeChart, setActiveChart] = React.useState("consommation");
+
+  // Calcul total pour chaque type
+  const total = React.useMemo(
+    () => ({
+      consommation: roundedData.reduce(
+        (acc, curr) => acc + (curr.consommation || 0),
+        0
+      ),
+      montantFacture: roundedData.reduce(
+        (acc, curr) => acc + (curr.montantFacture || 0),
+        0
+      ),
+    }),
+    [roundedData]
+  );
 
   return (
-    <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4">
-      <h3 className="text-lg font-bold mb-4 text-gray-700">
-        Consommation & Montant de la facture
-      </h3>
-      <ResponsiveContainer width="100%" height="85%">
-        <BarChart
-          data={roundedData}
-          margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+    <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4 flex flex-col">
+      <div className="flex flex-col sm:flex-row items-stretch border-b mb-2">
+        <div className="flex-1 flex flex-col justify-center gap-1 pb-2 sm:pb-0">
+          <span className="text-lg font-bold text-gray-700">
+            Bar Chart - Interactif
+          </span>
+          <span className="text-gray-500 text-sm">
+            Consommation ou montant par période
+          </span>
+        </div>
+        <div className="flex">
+          {["consommation", "montantFacture"].map((key) => (
+            <button
+              key={key}
+              data-active={activeChart === key}
+              className={
+                "data-[active=true]:bg-blue-100 flex flex-col justify-center gap-1 border-t px-4 py-2 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-4 transition " +
+                (activeChart === key ? "bg-blue-100 font-bold" : "bg-white")
+              }
+              onClick={() => setActiveChart(key)}
+            >
+              <span className="text-xs text-gray-500">
+                {chartConfig[key].label}
+              </span>
+              <span className="text-lg leading-none font-bold text-blue-900 sm:text-2xl">
+                {total[key].toLocaleString()}{" "}
+                {key === "consommation" ? "kWh" : "fcfa"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex-1 w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[220px] w-full"
         >
-          <XAxis
-            dataKey="date"
-            tick={{ fontSize: 12 }}
-            tickFormatter={(_, idx) => formatPeriode(roundedData[idx])}
-            interval={0}
-          />
-          <YAxis
-            yAxisId="left"
-            orientation="left"
-            tick={{ fontSize: 12 }}
-            label={{
-              value: "kWh",
-              angle: -90,
-              position: "insideLeft",
-              fontSize: 12,
-            }}
-          />
-          <YAxis
-            yAxisId="right"
-            orientation="right"
-            tick={{ fontSize: 12 }}
-            label={{
-              value: "FCFA",
-              angle: 90,
-              position: "insideRight",
-              fontSize: 12,
-            }}
-          />
-          <Tooltip
-            formatter={(value, name) => {
-              if (name === "consommation") return `${value} kWh`;
-              if (name === "Montant (fcfa)" || name === "montantFacture")
-                return `${value} fcfa`;
-              return value;
-            }}
-            labelFormatter={(_, idx) => formatPeriode(roundedData[idx])}
-          />
-          <Legend />
-          <Bar
-            yAxisId="left"
-            dataKey="consommation"
-            fill="#60a5fa"
-            name="Consommation (kWh)"
-            radius={[8, 8, 0, 0]}
-          />
-          <Bar
-            yAxisId="right"
-            dataKey="montantFacture"
-            fill="#facc15"
-            name="Montant (fcfa)"
-            radius={[8, 8, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={roundedData}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(_, idx) => formatPeriode(roundedData[idx])}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                axisLine={false}
+                tickLine={false}
+                label={{
+                  value: activeChart === "consommation" ? "kWh" : "FCFA",
+                  angle: -90,
+                  position: "insideLeft",
+                  fontSize: 12,
+                }}
+              />
+              <ChartTooltip
+                content={
+                  <ChartTooltipContent
+                    className="w-[150px]"
+                    nameKey={activeChart}
+                    labelFormatter={(_, idx) => formatPeriode(roundedData[idx])}
+                  />
+                }
+              />
+              <Bar
+                dataKey={activeChart}
+                fill={chartConfig[activeChart].color}
+                radius={4}
+                name={chartConfig[activeChart].label}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
     </div>
   );
-  // (removed duplicate export and extra closing brace)
 };
 
 export default ConsoMontantBarChart;
