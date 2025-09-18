@@ -85,9 +85,7 @@ const Historique = ({ historique }) => {
             </h2>
             <div className="w-full overflow-x-auto">
               <Table className="rounded-lg shadow-lg border border-gray-200 bg-white">
-                <TableCaption className="text-base font-semibold text-blue-900 bg-blue-50 rounded-t-lg py-2">
-                  Liste de toutes vos factures enregistrées.
-                </TableCaption>
+         
                 <TableHeader>
                   <TableRow className="bg-blue-100 sticky top-0 z-10">
                     <TableHead className="w-[60px] text-blue-900 font-bold">
@@ -192,9 +190,9 @@ const Historique = ({ historique }) => {
       </div>
 
       {historique.length > 0 ? (
-        <div className="w-full mt-8">
+     
           <ConsoMontantBarChart data={historique} />
-        </div>
+        
       ) : (
         <p className="text-center w-full mt-8 text-gray-500">historique vide</p>
       )}

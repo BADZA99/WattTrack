@@ -113,7 +113,7 @@ const ConsoMontantBarChart = ({ data }) => {
   );
 
   return (
-    <div className="w-full mx-auto h-80 bg-white rounded-xl shadow p-4 flex flex-col">
+    <div className="w-full mx-auto h-96 bg-white rounded-xl shadow p-4 flex flex-col">
       {/* Sélecteur de période */}
       <div className="flex items-center gap-2 mb-2">
         {[
