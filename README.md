@@ -6,10 +6,13 @@ WattTrack est une application web moderne qui vous permet de suivre, simuler et 
 
 ---
 
+
 ## 🚀 Fonctionnalités principales
 
 - **Simulation de facture** : Entrez vos indices de compteur et dates de relevé pour obtenir une estimation détaillée de votre consommation et du montant à payer.
-- **Historique des consultations** : Visualisez vos 3 dernières simulations avec tous les détails (dates, index, consommation, montant, etc.).
+- **Ajout manuel de facture** : Ajoutez une facture à l'historique via un formulaire dédié.
+- **Historique des consultations** : Visualisez l'ensemble de vos simulations avec tous les détails (dates, index, consommation, montant, etc.).
+- **Export/Import de l'historique** : Exportez votre historique au format JSON pour le sauvegarder, et importez-le à tout moment pour le restaurer.
 - **Graphiques interactifs** : Comparez visuellement votre consommation et le montant de vos factures sur vos dernières périodes.
 - **Comparaison de périodes** : Simulez et comparez le montant de votre facture pour différentes durées de facturation (50 à 65 jours).
 - **Interface responsive** : Design moderne, agréable et adapté à tous les écrans.
@@ -103,6 +106,10 @@ prevision_elec/
 
 ### Accueil (mobile)
 ![Accueil mobile](screenshots/acceuil%20mobile.png)
+
+
+### Ajout d'une facture (desktop)
+![Ajout facture](screenshots/ajout%20facture.png)
 
 ### Simulation & Résultats (desktop)
 ![Calcul et résultats](screenshots/calcul%20et%20resultats.png)
