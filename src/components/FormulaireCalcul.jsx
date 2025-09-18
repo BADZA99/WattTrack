@@ -3,6 +3,8 @@ import {
   calculPeriodeEtConso,
   montantConsommation,
 } from "../../utils/operations";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function FormulaireCalcul() {
   const [selectedTab, setSelectedTab] = React.useState("tab1");
@@ -22,7 +24,19 @@ export default function FormulaireCalcul() {
   const handleSubmit = (e) => {
     e.preventDefault();
     const { dateDebut, dateFin, indexDebut, indexFin } = form;
-    if (!dateDebut || !dateFin || !indexDebut || !indexFin) return;
+    if (!dateDebut || !dateFin || !indexDebut || !indexFin) {
+      toast.error("Veuillez remplir tous les champs du formulaire.");
+      return;
+    };
+    if (new Date(dateFin) <= new Date(dateDebut)) {
+      toast.error("La date de fin doit être postérieure à la date de début.");
+      return;
+    }
+    // si les index sont negatifs 
+    if (Number(indexDebut) < 0 || Number(indexFin) < 0) {
+      toast.error("Les index doivent être des nombres positifs.");
+      return;
+    }
     const { nbJours, consommation, consoMoyenne } = calculPeriodeEtConso(
       dateDebut,
       dateFin,
@@ -74,6 +88,7 @@ export default function FormulaireCalcul() {
     }
     setAltResults(alt);
     setSelectedTab("tab1");
+    toast.success("Calcul effectué avec succès !");
   };
 
   return (

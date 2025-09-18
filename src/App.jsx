@@ -5,6 +5,7 @@ import NavBar from "./components/NavBar";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import Calcul from "./pages/Calcul";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/calcul" element={<Calcul />} />
         </Routes>
       </div>
+      <ToastContainer position="bottom-right" autoClose={2000} />
     </Router>
   );
 }

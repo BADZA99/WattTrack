@@ -13,9 +13,9 @@ const Home = () => (
       </p>
       <Link
         to="/calcul"
-        className="group w-full sm:w-auto text-lg sm:text-2xl py-4 sm:py-5 px-4 sm:px-8 rounded-full border-2 border-[var(--prev-yellow)] bg-[var(--prev-yellow)] text-black font-extrabold shadow-2xl flex flex-row items-center justify-center gap-2 sm:gap-3 text-center hover:text-white hover:bg-transparent transition duration-300 hover:scale-105 focus:outline-none animate-bounce"
+        className="group w-1/2 sm:w-auto text-lg sm:text-2xl py-4 sm:py-5 px-4 sm:px-8 rounded-full border-2 border-[var(--prev-yellow)] bg-[var(--prev-yellow)] text-black font-extrabold shadow-2xl flex flex-row items-center justify-center gap-2 sm:gap-3 text-center hover:text-white hover:bg-transparent transition duration-300 hover:scale-105 focus:outline-none animate-bounce"
       >
-        <span className="block w-full text-center">Lancer ma simulation</span>
+        <span className="mx-auto w-full sm:w-full text-center">Commencer</span>
         <svg
           className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--prev-bg)] group-hover:text-white  transition flex-shrink-0"
           fill="none"
