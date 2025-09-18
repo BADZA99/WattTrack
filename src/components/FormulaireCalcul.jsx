@@ -37,6 +37,11 @@ export default function FormulaireCalcul() {
       toast.error("Les index doivent être des nombres positifs.");
       return;
     }
+    if (Number(indexDebut) > Number(indexFin) ) {
+      toast.error("L'index de fin doit être supérieur ou égal à l'index de début.");
+      return;
+    }
+    
     const { nbJours, consommation, consoMoyenne } = calculPeriodeEtConso(
       dateDebut,
       dateFin,
