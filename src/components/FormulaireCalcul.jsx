@@ -27,21 +27,27 @@ export default function FormulaireCalcul() {
     if (!dateDebut || !dateFin || !indexDebut || !indexFin) {
       toast.error("Veuillez remplir tous les champs du formulaire.");
       return;
-    };
-    if (new Date(dateFin) <= new Date(dateDebut)) {
+    }
+    if (new Date(dateFin).getTime() === new Date(dateDebut).getTime()) {
+      toast.error("Les deux dates doivent être différentes.");
+      return;
+    }
+    if (new Date(dateFin) < new Date(dateDebut)) {
       toast.error("La date de fin doit être postérieure à la date de début.");
       return;
     }
-    // si les index sont negatifs 
+    // si les index sont negatifs
     if (Number(indexDebut) < 0 || Number(indexFin) < 0) {
       toast.error("Les index doivent être des nombres positifs.");
       return;
     }
-    if (Number(indexDebut) > Number(indexFin) ) {
-      toast.error("L'index de fin doit être supérieur ou égal à l'index de début.");
+    if (Number(indexDebut) > Number(indexFin)) {
+      toast.error(
+        "L'index de fin doit être supérieur ou égal à l'index de début."
+      );
       return;
     }
-    
+
     const { nbJours, consommation, consoMoyenne } = calculPeriodeEtConso(
       dateDebut,
       dateFin,
@@ -191,7 +197,7 @@ export default function FormulaireCalcul() {
         <div className="bg-[var(--prev-blue)] p-2 rounded-t-lg">
           <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
             {[
-              { key: "tab1", label: "Historique" },
+              { key: "tab1", label: "Resultats" },
               { key: "infos", label: "Informations" },
             ].map((tab) => (
               <button
@@ -218,7 +224,7 @@ export default function FormulaireCalcul() {
           <div className="bg-white overflow-hidden shadow rounded-lg border">
             <div className="px-4 py-5 sm:px-6">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Historique
+                Resultats
               </h3>
               {result ? (
                 <p className="mt-1 max-w-2xl text-md text-gray-500">
@@ -226,7 +232,7 @@ export default function FormulaireCalcul() {
                 </p>
               ) : (
                 <p className="mt-1 max-w-2xl text-md text-gray-500">
-                  Veuillez remplir le formulaire pour voir l'historique
+                  Veuillez remplir le formulaire pour voir les Resultats
                 </p>
               )}
             </div>

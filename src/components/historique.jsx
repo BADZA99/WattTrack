@@ -5,8 +5,8 @@ import ConsoMontantBarChart from "./ConsoMontantBarChart";
 const Historique = () => {
   const [historique, setHistorique] = React.useState([]);
 
-  const data = localStorage.getItem("consultationData");
   React.useEffect(() => {
+    const data = localStorage.getItem("consultationData");
     if (data) {
       const parsed = JSON.parse(data);
       let hist = parsed.historique || [];
@@ -15,7 +15,7 @@ const Historique = () => {
       // Garder seulement les 3 plus récents
       setHistorique(hist.slice(0, 3));
     }
-  }, [data]);
+  }, []);
 
   return (
     <div className="p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto flex flex-col gap-6 items-stretch bg-transparent">
