@@ -2,21 +2,7 @@ import React from "react";
 import ConsoMontantBarChart from "./ConsoMontantBarChart";
 // 40968;
 // 41397
-const Historique = () => {
-  const [historique, setHistorique] = React.useState([]);
-
-  React.useEffect(() => {
-    const data = localStorage.getItem("consultationData");
-    if (data) {
-      const parsed = JSON.parse(data);
-      let hist = parsed.historique || [];
-      // Trier par date décroissante (plus récent d'abord)
-      hist = hist.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
-      // Garder seulement les 3 plus récents
-      setHistorique(hist.slice(0, 3));
-    }
-  }, []);
-
+const Historique = ({ historique }) => {
   return (
     <div className="p-2 sm:p-4 md:p-6 w-full max-w-5xl mx-auto flex flex-col gap-6 items-stretch bg-transparent">
       <div className="w-full">
@@ -36,55 +22,55 @@ const Historique = () => {
                         <tr>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             #
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Date
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Début
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Fin
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Index Début
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Index Fin
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Jours
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Conso
                           </th>
                           <th
                             scope="col"
-                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-700"
+                            className="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-gray-800"
                           >
                             Moyenne
                           </th>
@@ -107,28 +93,28 @@ const Historique = () => {
                             <td className="px-2 sm:px-4 py-2 whitespace-nowrap font-medium text-gray-900">
                               {idx + 1}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {new Date(item.date).toLocaleString()}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.dateDebut}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.dateFin}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.indexDebut}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.indexFin}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.nbJours}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.consommation}
                             </td>
-                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-light">
+                            <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-gray-900 font-medium">
                               {item.consoMoyenne?.toFixed(2)}
                             </td>
                             <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-yellow-900 font-bold">
