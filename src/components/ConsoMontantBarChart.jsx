@@ -1,4 +1,36 @@
 import * as React from "react";
+import * as XLSX from "xlsx";
+// Utilitaire pour exporter en CSV
+function exportToCSV(data, filename) {
+  const header = ["Période", "Consommation (kWh)", "Montant (fcfa)"];
+  const rows = data.map((row) => [
+    row.label,
+    row.consommation,
+    row.montantFacture,
+  ]);
+  const csvContent = [header, ...rows].map((e) => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Utilitaire pour exporter en Excel
+function exportToExcel(data, filename) {
+  const ws = XLSX.utils.json_to_sheet(
+    data.map((row) => ({
+      Période: row.label,
+      "Consommation (kWh)": row.consommation,
+      "Montant (fcfa)": row.montantFacture,
+    }))
+  );
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Données");
+  XLSX.writeFile(wb, filename);
+}
 import { TrendingUp } from "lucide-react";
 import {
   CartesianGrid,
@@ -112,20 +144,49 @@ const ConsoMontantLineChart = ({ data }) => {
   const [selectedYear, setSelectedYear] = React.useState(
     () => years[0] || new Date().getFullYear()
   );
-  const [mode, setMode] = React.useState("bimestre"); // "bimestre" ou "mois"
+  // mode: "bimestre", "mois", "2dernierBim", "6premiersBim", "6derniersBim"
+  const [mode, setMode] = React.useState("bimestre");
 
-  // Données agrégées par mois, bimestre ou 6 mois pour l'année sélectionnée
+  // Données filtrées selon le mode
   const aggregates = React.useMemo(() => {
-    if (mode === "6mois") {
-      // Prend les 6 derniers mois de l'année
-      const allMonths = getAggregates(data, selectedYear, "mois");
-      return allMonths.slice(-6);
+    const bims = getAggregates(data, selectedYear, "bimestre");
+    if (mode === "2dernierBim") {
+      return bims.slice(-1); // Dernier bimestre (2 derniers mois)
     }
-    return getAggregates(data, selectedYear, mode);
+    if (mode === "6premiersBim") {
+      return bims.slice(0, 3); // 3 premiers bimestres (6 premiers mois)
+    }
+    if (mode === "6derniersBim") {
+      return bims.slice(3, 6); // 3 derniers bimestres (6 derniers mois)
+    }
+    if (mode === "bimestre") {
+      return bims;
+    }
+    // fallback: mois
+    return getAggregates(data, selectedYear, "mois");
   }, [data, selectedYear, mode]);
 
   return (
-    <Card className="w-full mx-auto h-96 bg-white rounded-xl shadow p-4 flex flex-col">
+    <Card className="w-full mx-auto h-auto bg-white rounded-xl shadow p-4 flex flex-col">
+      {/* Boutons d'export */}
+      <div className="flex gap-2 mb-2 justify-end">
+        <button
+          className="px-3 py-1 rounded border text-xs font-semibold bg-white border-gray-300 text-gray-600 hover:bg-gray-100"
+          onClick={() =>
+            exportToCSV(aggregates, `evolution_${selectedYear}_${mode}.csv`)
+          }
+        >
+          Exporter CSV
+        </button>
+        <button
+          className="px-3 py-1 rounded border text-xs font-semibold bg-white border-gray-300 text-gray-600 hover:bg-gray-100"
+          onClick={() =>
+            exportToExcel(aggregates, `evolution_${selectedYear}_${mode}.xlsx`)
+          }
+        >
+          Exporter Excel
+        </button>
+      </div>
       <CardHeader>
         <CardTitle>
           Consommation & Montant par {mode === "bimestre" ? "bimestre" : "mois"}
@@ -151,7 +212,7 @@ const ConsoMontantLineChart = ({ data }) => {
               ))}
             </select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="font-semibold text-gray-700">Affichage :</span>
             <button
               className={
@@ -163,7 +224,43 @@ const ConsoMontantLineChart = ({ data }) => {
               onClick={() => setMode("bimestre")}
               type="button"
             >
-              Bimestre
+              Toute l'année (bimestre)
+            </button>
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "2dernierBim"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("2dernierBim")}
+              type="button"
+            >
+              2 derniers mois
+            </button>
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "6premiersBim"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("6premiersBim")}
+              type="button"
+            >
+              6 premiers mois
+            </button>
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "6derniersBim"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("6derniersBim")}
+              type="button"
+            >
+              6 derniers mois
             </button>
             <button
               className={
@@ -175,19 +272,7 @@ const ConsoMontantLineChart = ({ data }) => {
               onClick={() => setMode("mois")}
               type="button"
             >
-              Mois
-            </button>
-            <button
-              className={
-                "px-3 py-1 rounded border text-xs font-semibold transition " +
-                (mode === "6mois"
-                  ? "bg-blue-100 border-blue-400 text-blue-900"
-                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
-              }
-              onClick={() => setMode("6mois")}
-              type="button"
-            >
-              6 mois
+              Par mois (optionnel)
             </button>
           </div>
         </div>
@@ -223,8 +308,12 @@ const ConsoMontantLineChart = ({ data }) => {
               <ChartTooltip
                 content={({ active, payload, label }) => {
                   if (!active || !payload || !payload.length) return null;
-                  const conso = payload.find((p) => p.dataKey === "consommation");
-                  const montant = payload.find((p) => p.dataKey === "montantFacture");
+                  const conso = payload.find(
+                    (p) => p.dataKey === "consommation"
+                  );
+                  const montant = payload.find(
+                    (p) => p.dataKey === "montantFacture"
+                  );
                   return (
                     <div className="bg-white rounded shadow p-2 text-xs min-w-[140px]">
                       <div className="font-semibold mb-1">{label}</div>
@@ -232,13 +321,17 @@ const ConsoMontantLineChart = ({ data }) => {
                         {conso && (
                           <div className="flex items-center justify-between">
                             <span>{chartConfig.consommation.label}:</span>
-                            <span className="font-bold text-blue-700">{conso.value}</span>
+                            <span className="font-bold text-blue-700">
+                              {conso.value}
+                            </span>
                           </div>
                         )}
                         {montant && (
                           <div className="flex items-center justify-between">
                             <span>{chartConfig.montantFacture.label}:</span>
-                            <span className="font-bold text-yellow-600">{montant.value}</span>
+                            <span className="font-bold text-yellow-600">
+                              {montant.value}
+                            </span>
                           </div>
                         )}
                       </div>
