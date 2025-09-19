@@ -10,17 +10,45 @@ import ResultatsCalcul from "./ResultatsCalcul";
 
 export default function FormulaireCalcul() {
   const [selectedTab, setSelectedTab] = React.useState("tab1");
-  const [form, setForm] = React.useState({
-    dateDebut: "",
-    dateFin: "",
-    indexDebut: "",
-    indexFin: "",
-  });
+  // Initialiser dateDebut et indexDebut depuis le localStorage si présents
+  const getInitialForm = () => {
+    let saved = localStorage.getItem("estimationDefaults");
+    let def = { dateDebut: "", indexDebut: "" };
+    if (saved) {
+      try {
+        def = { ...def, ...JSON.parse(saved) };
+      } catch (e) {
+        toast.error("Erreur lors de la lecture des valeurs par défaut :", e);
+
+      }
+    }
+    return {
+      dateDebut: def.dateDebut || "",
+      dateFin: "",
+      indexDebut: def.indexDebut || "",
+      indexFin: "",
+    };
+  };
+  const [form, setForm] = React.useState(getInitialForm);
   const [result, setResult] = React.useState(null);
   const [altResults, setAltResults] = React.useState([]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Si on modifie dateDebut ou indexDebut, on sauvegarde dans le localStorage
+      if (name === "dateDebut" || name === "indexDebut") {
+        localStorage.setItem(
+          "estimationDefaults",
+          JSON.stringify({
+            dateDebut: name === "dateDebut" ? value : updated.dateDebut,
+            indexDebut: name === "indexDebut" ? value : updated.indexDebut,
+          })
+        );
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = (e) => {
@@ -57,34 +85,6 @@ export default function FormulaireCalcul() {
       indexFin
     );
     const montant = montantConsommation(consommation, nbJours);
-    const now = new Date().toISOString();
-
-    // Création de l'objet à enregistrer
-    const entry = {
-      date: now,
-      dateDebut,
-      dateFin,
-      indexDebut: Number(indexDebut),
-      indexFin: Number(indexFin),
-      nbJours,
-      consommation,
-      consoMoyenne,
-      montantFacture: montant.montantFacture,
-    };
-
-    // Enregistrement dans le localStorage
-    let data = localStorage.getItem("consultationData");
-    let parsed = data
-      ? JSON.parse(data)
-      : { derniereConsultation: null, historique: [] };
-    parsed.derniereConsultation = now;
-    parsed.historique.unshift(entry);
-
-    localStorage.setItem("consultationData", JSON.stringify(parsed));
-    // Si la prop onNewConsultation est fournie, on l'appelle pour prévenir le parent
-    // qu'une nouvelle consultation vient d'être enregistrée. Cela permet au parent
-    // de recharger l'historique et d'afficher instantanément la mise à jour.
-    // if (onNewConsultation) onNewConsultation();
 
     setResult({
       nbJours,
@@ -95,7 +95,7 @@ export default function FormulaireCalcul() {
       dateFin,
     });
 
-    // Générer les résultats alternatifs pour les périodes de 50 à 65 jours
+    // Générer les résultats alternatifs pour les périodes de 57 à 63 jours
     const alt = [];
     for (let jours = 57; jours <= 63; jours++) {
       // On projette la consommation sur la période : consommation moyenne * jours projetés
@@ -107,7 +107,7 @@ export default function FormulaireCalcul() {
     }
     setAltResults(alt);
     setSelectedTab("tab1");
-    toast.success("Calcul effectué avec succès !");
+    toast.success("Estimation effectuée avec succès !");
   };
 
   return (

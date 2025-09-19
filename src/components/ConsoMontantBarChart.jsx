@@ -1,15 +1,21 @@
-"use client";
-
 import * as React from "react";
+import { TrendingUp } from "lucide-react";
 import {
-  BarChart,
-  Bar,
   CartesianGrid,
+  Line,
+  LineChart,
   XAxis,
   YAxis,
-  Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
@@ -27,214 +33,255 @@ const chartConfig = {
   },
 };
 
-const ConsoMontantBarChart = ({ data }) => {
-  // Helper to format a period label from dateDebut and dateFin
-  const formatPeriode = (entry) => {
-    if (!entry?.dateDebut || !entry?.dateFin) return "";
-    const d1 = new Date(entry.dateDebut);
-    const d2 = new Date(entry.dateFin);
-    const f1 = d1.toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
+const getAvailableYears = (data) => {
+  const years = new Set();
+  data.forEach((d) => {
+    const date = d.dateFin || d.date || d.dateDebut;
+    if (date) {
+      years.add(new Date(date).getFullYear());
+    }
+  });
+  return Array.from(years).sort((a, b) => b - a);
+};
+
+// Regroupe les données par mois OU par bimestre (2 mois)
+const getAggregates = (data, year, mode = "mois") => {
+  if (mode === "bimestre") {
+    // 6 bimestres
+    const bimestres = Array.from({ length: 6 }, (_, i) => ({
+      idx: i,
+      consommation: 0,
+      montantFacture: 0,
+      count: 0,
+      label: `${new Date(year, i * 2, 1).toLocaleString("fr-FR", {
+        month: "short",
+      })} - ${new Date(year, i * 2 + 1, 1).toLocaleString("fr-FR", {
+        month: "short",
+        year: "numeric",
+      })}`,
+    }));
+    data.forEach((d) => {
+      const date = d.dateFin || d.date || d.dateDebut;
+      if (date) {
+        const dt = new Date(date);
+        if (dt.getFullYear() === year) {
+          const m = dt.getMonth();
+          const bi = Math.floor(m / 2);
+          bimestres[bi].consommation += Number(d.consommation) || 0;
+          bimestres[bi].montantFacture += Math.round(
+            Number(d.montantFacture) || 0
+          );
+          bimestres[bi].count += 1;
+        }
+      }
     });
-    const f2 = d2.toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "2-digit",
+    return bimestres;
+  } else {
+    // Par mois
+    const months = Array.from({ length: 12 }, (_, i) => ({
+      month: i,
+      consommation: 0,
+      montantFacture: 0,
+      count: 0,
+      dateObj: new Date(year, i, 1),
+    }));
+    data.forEach((d) => {
+      const date = d.dateFin || d.date || d.dateDebut;
+      if (date) {
+        const dt = new Date(date);
+        if (dt.getFullYear() === year) {
+          const m = dt.getMonth();
+          months[m].consommation += Number(d.consommation) || 0;
+          months[m].montantFacture += Math.round(Number(d.montantFacture) || 0);
+          months[m].count += 1;
+        }
+      }
     });
-    return `${f1} - ${f2}`;
-  };
+    return months.map((m) => ({
+      ...m,
+      label: m.dateObj.toLocaleString("fr-FR", {
+        month: "short",
+        year: "numeric",
+      }),
+    }));
+  }
+};
 
-  // Sélecteur de période
-  const [periode, setPeriode] = React.useState("2mois"); // "2mois", "annee", "tout"
-
-  // Filtrage selon la période sélectionnée
-  const filteredData = React.useMemo(() => {
-    if (!Array.isArray(data)) return [];
-    const now = new Date();
-    if (periode === "2mois") {
-      // 60 derniers jours
-      const cutoff = new Date(now);
-      cutoff.setDate(now.getDate() - 59); // inclut aujourd'hui
-      return data.filter((d) => {
-        const d2 = d.dateFin
-          ? new Date(d.dateFin)
-          : d.date
-          ? new Date(d.date)
-          : null;
-        return d2 && d2 >= cutoff;
-      });
-    }
-    if (periode === "6mois") {
-      // 6 derniers mois
-      const cutoff = new Date(now);
-      cutoff.setMonth(now.getMonth() - 5); // inclut ce mois-ci
-      return data.filter((d) => {
-        const d2 = d.dateFin
-          ? new Date(d.dateFin)
-          : d.date
-          ? new Date(d.date)
-          : null;
-        return d2 && d2 >= cutoff;
-      });
-    }
-    if (periode === "annee") {
-      // 12 derniers mois
-      const cutoff = new Date(now);
-      cutoff.setFullYear(now.getFullYear() - 1);
-      return data.filter((d) => {
-        const d2 = d.dateFin
-          ? new Date(d.dateFin)
-          : d.date
-          ? new Date(d.date)
-          : null;
-        return d2 && d2 >= cutoff;
-      });
-    }
-    // tout l'historique
-    return data;
-  }, [data, periode]);
-
-  // Preprocess data to round montantFacture
-  const roundedData = React.useMemo(
-    () =>
-      Array.isArray(filteredData)
-        ? filteredData.map((d) => ({
-            ...d,
-            montantFacture: Math.round(d.montantFacture),
-          }))
-        : [],
-    [filteredData]
+const ConsoMontantLineChart = ({ data }) => {
+  const years = React.useMemo(() => getAvailableYears(data), [data]);
+  const [selectedYear, setSelectedYear] = React.useState(
+    () => years[0] || new Date().getFullYear()
   );
+  const [mode, setMode] = React.useState("bimestre"); // "bimestre" ou "mois"
 
-  const [activeChart, setActiveChart] = React.useState("consommation");
-
-  // Calcul total pour chaque type
-  const total = React.useMemo(
-    () => ({
-      consommation: roundedData.reduce(
-        (acc, curr) => acc + (curr.consommation || 0),
-        0
-      ),
-      montantFacture: roundedData.reduce(
-        (acc, curr) => acc + (curr.montantFacture || 0),
-        0
-      ),
-    }),
-    [roundedData]
-  );
+  // Données agrégées par mois, bimestre ou 6 mois pour l'année sélectionnée
+  const aggregates = React.useMemo(() => {
+    if (mode === "6mois") {
+      // Prend les 6 derniers mois de l'année
+      const allMonths = getAggregates(data, selectedYear, "mois");
+      return allMonths.slice(-6);
+    }
+    return getAggregates(data, selectedYear, mode);
+  }, [data, selectedYear, mode]);
 
   return (
-    <div className="w-full mx-auto h-96 bg-white rounded-xl shadow p-4 flex flex-col">
-      {/* Sélecteur de période */}
-      <div className="flex items-center gap-2 mb-2">
-        {[
-          { key: "2mois", label: "2 derniers mois" },
-          { key: "3mois", label: "3 derniers mois" },
-          { key: "6mois", label: "6 derniers mois" },
-          { key: "annee", label: "Année dernière" },
-          { key: "tout", label: "Tout" },
-        ].map((p) => (
-          <button
-            key={p.key}
-            className={
-              "px-3 py-1 rounded border text-xs font-semibold transition " +
-              (periode === p.key
-                ? "bg-blue-100 border-blue-400 text-blue-900"
-                : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
-            }
-            onClick={() => setPeriode(p.key)}
-            type="button"
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-stretch border-b mb-2">
-        <div className="flex-1 flex flex-col justify-center gap-1 pb-2 sm:pb-0">
-          <span className="text-lg font-bold text-gray-700">
-            Bar Chart - Interactif
-          </span>
-          <span className="text-gray-500 text-sm">
-            Consommation ou montant par période
-          </span>
-        </div>
-        <div className="flex">
-          {["consommation", "montantFacture"].map((key) => (
-            <button
-              key={key}
-              data-active={activeChart === key}
-              className={
-                "data-[active=true]:bg-blue-100 flex flex-col justify-center gap-1 border-t px-4 py-2 text-left even:border-l sm:border-t-0 sm:border-l sm:px-8 sm:py-4 transition " +
-                (activeChart === key ? "bg-blue-100 font-bold" : "bg-white")
-              }
-              onClick={() => setActiveChart(key)}
+    <Card className="w-full mx-auto h-96 bg-white rounded-xl shadow p-4 flex flex-col">
+      <CardHeader>
+        <CardTitle>
+          Consommation & Montant par {mode === "bimestre" ? "bimestre" : "mois"}
+        </CardTitle>
+        <CardDescription>
+          Choisissez une année et l'affichage (bimestre/mois)
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        {/* Sélecteur d'année et de mode */}
+        <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-gray-700">Année :</span>
+            <select
+              className="border rounded px-2 py-1 text-sm"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
             >
-              <span className="text-xs text-gray-500">
-                {chartConfig[key].label}
-              </span>
-              <span className="text-lg leading-none font-bold text-blue-900 sm:text-2xl">
-                {total[key].toLocaleString()}{" "}
-                {key === "consommation" ? "kWh" : "fcfa"}
-              </span>
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-gray-700">Affichage :</span>
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "bimestre"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("bimestre")}
+              type="button"
+            >
+              Bimestre
             </button>
-          ))}
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "mois"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("mois")}
+              type="button"
+            >
+              Mois
+            </button>
+            <button
+              className={
+                "px-3 py-1 rounded border text-xs font-semibold transition " +
+                (mode === "6mois"
+                  ? "bg-blue-100 border-blue-400 text-blue-900"
+                  : "bg-white border-gray-300 text-gray-600 hover:bg-gray-100")
+              }
+              onClick={() => setMode("6mois")}
+              type="button"
+            >
+              6 mois
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div className="flex-1 w-full">
         <ChartContainer
           config={chartConfig}
           className="aspect-auto h-[220px] w-full"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={roundedData}
+            <LineChart
+              data={aggregates}
               margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
             >
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis
-                dataKey="date"
+                dataKey="label"
                 tickLine={false}
                 axisLine={false}
                 tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(_, idx) => formatPeriode(roundedData[idx])}
+                minTickGap={0}
+                tickFormatter={(label) => label}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
                 axisLine={false}
                 tickLine={false}
                 label={{
-                  value: activeChart === "consommation" ? "kWh" : "FCFA",
+                  value: "Valeur",
                   angle: -90,
                   position: "insideLeft",
                   fontSize: 12,
                 }}
               />
               <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    className="w-[150px]"
-                    nameKey={activeChart}
-                    labelFormatter={(_, idx) => formatPeriode(roundedData[idx])}
-                  />
-                }
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const conso = payload.find((p) => p.dataKey === "consommation");
+                  const montant = payload.find((p) => p.dataKey === "montantFacture");
+                  return (
+                    <div className="bg-white rounded shadow p-2 text-xs min-w-[140px]">
+                      <div className="font-semibold mb-1">{label}</div>
+                      <div className="flex flex-col gap-1">
+                        {conso && (
+                          <div className="flex items-center justify-between">
+                            <span>{chartConfig.consommation.label}:</span>
+                            <span className="font-bold text-blue-700">{conso.value}</span>
+                          </div>
+                        )}
+                        {montant && (
+                          <div className="flex items-center justify-between">
+                            <span>{chartConfig.montantFacture.label}:</span>
+                            <span className="font-bold text-yellow-600">{montant.value}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }}
               />
-              <Bar
-                dataKey={activeChart}
-                fill={chartConfig[activeChart].color}
-                radius={4}
-                name={chartConfig[activeChart].label}
+              <Line
+                dataKey="consommation"
+                type="monotone"
+                stroke={chartConfig.consommation.color}
+                strokeWidth={2}
+                dot={false}
+                name={chartConfig.consommation.label}
               />
-            </BarChart>
+              <Line
+                dataKey="montantFacture"
+                type="monotone"
+                stroke={chartConfig.montantFacture.color}
+                strokeWidth={2}
+                dot={false}
+                name={chartConfig.montantFacture.label}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </ChartContainer>
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter>
+        <div className="flex w-full items-start gap-2 text-sm">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 leading-none font-medium">
+              Visualisation annuelle <TrendingUp className="h-4 w-4" />
+            </div>
+            <div className="text-muted-foreground flex items-center gap-2 leading-none">
+              Affiche la consommation et le montant pour chaque{" "}
+              {mode === "bimestre" ? "bimestre" : "mois"} de l'année
+              sélectionnée
+            </div>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   );
 };
 
-export default ConsoMontantBarChart;
+export default ConsoMontantLineChart;
